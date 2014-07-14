@@ -506,3 +506,4 @@ dat.plot<-subset(dat.in,Species==species.in)
 plot(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD,xlim=c(0,round(max(c(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD)))),ylim=c(0,round(max(c(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD)))),xlab="",ylab="",pch=21,bg=col.in,cex=1.25)
 abline(a=0,b=1,lwd=2,col="red")
 }
+#test for Git
