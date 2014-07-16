@@ -50,11 +50,14 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
   if(Bp.find=="T")
   {
     Spp.bps<-Prof.out<-Low.breaks<-list()
+    #Create 2x2 empty panels for graphs
     par(mfrow=c(2,2))
     for(i in 1:length(Spp.dat.AFM))
     {
       Spp.dat.AFM.mod<-Spp.dat.AFM[[i]][Spp.dat.AFM[[i]][,1]>lowbreaks[i],]
+      #minimize the function PReg.obj, given initial guesses for breakpoint, slopes, and y-intercept.
       out.f<- optim(c(sum(rngSplit)/2,0,0.1,0.1),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit)
+      #record results of minimization, record breakpoint, standardize name of original and modified data
       Spp.bps[[i]]<-out.f
       Low.breaks[[i]]<-lowbreaks[i]
       names(Spp.bps)[[i]]<-names(Low.breaks)[[i]]<-dat.names[i]
@@ -63,9 +66,11 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
       likeProf$CI <- likeProf$fDiff-2.5
       Prof.out[[i]]<-tmp <- likeProf
       tmp[tmp$f==min(tmp$f),]
+      #plot graphs using the modified data with piecewise curves.
       plot(tmp$split,tmp$fDiff,type="l",xlab="Breakpoint",ylab="-LogLike Difference from minimum",main=dat.names[i],lwd=2)
       abline(h=qchisq(0.95,1)/2,col="red",lwd=1.5,lty=2)
     }
+    #Create list of modified data, breakpoints, and minimization results. Standardize names.
     names(Prof.out)<-dat.names
     Dat.Bps.out<-list(Spp.dat.AFM,Spp.bps,Low.breaks,Prof.out)
     names(Dat.Bps.out)<-c("Data","Bps","AgeBreaks","Profile")
@@ -250,23 +255,32 @@ Pred.ages.oto<-function(dat.list.in,low.breaks,intercept=999)
 PReg.obj <- function(x,x.in,y.in,rngSplit=c(75,180),fixSplt=NULL,verbose=F) {
     #piecewise regression, assuming continuous function at breakpoint.
     #Therefore, same intercept for both equations
+    #note: b1 and b2 are slopes and alpha is the y-intercept. splt is the breakpoint.
     splt <- x[1]
     alpha <- x[2]
     b1 <- x[3]
     b2 <- x[4]
+    #nobs = number observed
     nobs <- length(x.in)
-
+    #creates an empty vecter with 'nobs' number of elements.
     predY <- rep(NA,nobs)
+    #take lower half of data below breakpoint guess
     ind <- x.in <= splt
+    
+    #plug data into line equation
     predY[ind] <- alpha+b1*(x.in[ind]-splt)
+    #difference of squares
     f.left <- sum((predY[ind]-y.in[ind])^2)
+    #same as above, but with upper half of data
     ind <- x.in > splt
     predY[ind] <- alpha+b2*(x.in[ind]-splt)
     f.right <- sum((predY[ind]-y.in[ind])^2)
-
+   
+    #Sum all the differences of squares (this is to be minimized)
     f <- (f.left+f.right)
     if(verbose){cat(f.left,f.right,f,"\n")}
 
+    #if breakpoint is out of domain, return arbitrarily large number as a flag, and so optim will avoid
     if(splt<rngSplit[1] | splt>rngSplit[2]) {
         return(1e10)
     }
