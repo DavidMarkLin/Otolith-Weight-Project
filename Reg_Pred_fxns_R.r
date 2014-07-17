@@ -10,6 +10,7 @@ library(gplots)
 #breakpts = breakpoints used when Bp.find = "F"
 #lowbreaks = the otolith weight at which the data set is separated. The low numbers are not used in any of the linear models.
 #intcpt = "Y" estimates the intercept; "N" sets it to 0.
+#7/17/2014
 
 Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find="F",rngSplit=c(10,200),steppin=10,breakpts,lowbreaks=c(0,0,0),intcpt="Y")
 {
