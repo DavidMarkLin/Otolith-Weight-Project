@@ -10,9 +10,9 @@ library(gplots)
 #breakpts = breakpoints used when Bp.find = "F"
 #lowbreaks = the otolith weight at which the data set is separated. The low numbers are not used in any of the linear models.
 #intcpt = "Y" estimates the intercept; "N" sets it to 0.
-#7/17/2014
 
-Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find="F",rngSplit=c(10,200),steppin=10,breakpts,lowbreaks=c(0,0,0),intcpt="Y")
+
+Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find="F",rngSplit=c(10,200),steppin=10,breakpts,lowbreaks=c(0,0,0),intcpt="Y",CG="F")
 {
   #Data prep
   dat.names<-c("All","Females","Males")
@@ -56,9 +56,16 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
     for(i in 1:length(Spp.dat.AFM))
     {
       Spp.dat.AFM.mod<-Spp.dat.AFM[[i]][Spp.dat.AFM[[i]][,1]>lowbreaks[i],]
-      #minimize the function PReg.obj, given initial guesses for breakpoint, slopes, and y-intercept.
-      out.f<- optim(c(sum(rngSplit)/2,0,0.1,0.1),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit)
-      #record results of minimization, record breakpoint, standardize name of original and modified data
+      if(CG=="F")
+      {
+        #minimize the function PReg.obj, given initial guesses for breakpoint, slopes, and y-intercept.
+        out.f<- optim(c(sum(rngSplit)/2,0,0.1,0.1),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit)
+        #record results of minimization, record breakpoint, standardize name of original and modified data
+      }
+      if(CG=="T")
+      {
+        out.f<- optim(c(sum(rngSplit)/2,0,0.1,0.1),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit,df,method="CG")
+      }
       Spp.bps[[i]]<-out.f
       Low.breaks[[i]]<-lowbreaks[i]
       names(Spp.bps)[[i]]<-names(Low.breaks)[[i]]<-dat.names[i]
@@ -521,3 +528,5 @@ dat.plot<-subset(dat.in,Species==species.in)
 plot(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD,xlim=c(0,round(max(c(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD)))),ylim=c(0,round(max(c(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD)))),xlab="",ylab="",pch=21,bg=col.in,cex=1.25)
 abline(a=0,b=1,lwd=2,col="red")
 }
+#################################################################
+#deriv <- function(x.in)
