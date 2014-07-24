@@ -12,7 +12,7 @@ library(gplots)
 #intcpt = "Y" estimates the intercept; "N" sets it to 0.
 
 
-Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find="F",rngSplit=c(10,200),steppin=10,breakpts,lowbreaks=c(0,0,0),intcpt="Y",CG="F")
+Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find="F",rngSplit=c(10,200),steppin=10,breakpts,lowbreaks=c(0,0,0),intcpt="Y",CG="F",jitter=0)
 {
   #Data prep
   dat.names<-c("All","Females","Males")
@@ -66,6 +66,27 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
       {
         out.f<- optim(c(sum(rngSplit)/2,0,0.1,0.1),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit,df,method="CG")
       }
+      out.f.jitter<-NA
+      if(jitter>0)
+      {
+        out.f.jitter=list()
+        yint<-runif(jitter,0,5)
+        m1<-rnorm(jitter,0.1,0.03)
+        m2<-rnorm(jitter,0.1,0.03)
+        for(x in 1:jitter){
+        out.f.jitter[[x]]<- optim(c(sum(rngSplit)/2,yint[x],m1[x],m2[x]),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit)
+        }
+        inputy<-inputm1<-inputm2<-c()
+        for(i in 1:jitter){
+          inputy[i] = out.f.jitter$i$par$yint
+          inputm1[i] = out.f.jitter$i$par$m1
+          inputm2[i] = out.f.jitter$i$par$m2
+        }
+        x = c(1:100)
+        plot(x,inputy)
+        plot(x,inputm1)
+        plot(x,inputm2)
+      }  
       Spp.bps[[i]]<-out.f
       Low.breaks[[i]]<-lowbreaks[i]
       names(Spp.bps)[[i]]<-names(Low.breaks)[[i]]<-dat.names[i]
@@ -87,6 +108,7 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
 
   if(Bp.find=="F")
   {
+  out.f.jitter<-NA
   Lm.out<-list()
   Lm.names<-c("Bp1","Bp2","NoBp")
   for(i in 1:length(Spp.dat.AFM))
@@ -120,8 +142,8 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
   }
   names(Lm.out)<-dat.names
   colnames(Spp.dat.AFM[[1]])<-colnames(Spp.dat.AFM[[2]])<-colnames(Spp.dat.AFM[[3]])<-c("OtoWt","Age")
-  Dat.Bp.Lm.out<-list(Spp.dat.AFM,Lm.out,lowbreaks,breakpts,Lts)
-  names(Dat.Bp.Lm.out)<-c("Data","LMs","Low_wt_breaks_used","Bps_used","Lt")
+  Dat.Bp.Lm.out<-list(Spp.dat.AFM,Lm.out,lowbreaks,breakpts,Lts,out.f.jitter)
+  names(Dat.Bp.Lm.out)<-c("Data","LMs","Low_wt_breaks_used","Bps_used","Lt","Jitter")
   return(Dat.Bp.Lm.out)
   }
 }
@@ -528,5 +550,4 @@ dat.plot<-subset(dat.in,Species==species.in)
 plot(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD,xlim=c(0,round(max(c(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD)))),ylim=c(0,round(max(c(subset(dat.plot,Reader==1)$SD,subset(dat.plot,Reader==2)$SD)))),xlab="",ylab="",pch=21,bg=col.in,cex=1.25)
 abline(a=0,b=1,lwd=2,col="red")
 }
-#################################################################
-#deriv <- function(x.in)
+

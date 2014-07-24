@@ -24,7 +24,7 @@ hake.summ.All<-boxplot(Hake.Bps.dat$A[,1]~Hake.Bps.dat$A[,2])
 hake.summ.F<-boxplot(Hake.Bps.dat$F[,1]~Hake.Bps.dat$F[,2])
 hake.summ.M<-boxplot(Hake.Bps.dat$M[,1]~Hake.Bps.dat$M[,2])
 #Calculate breakpoints
-Hake.Bps.A<-Oto.Age.Model.fits(Hake.dat.otos,oto.age.col=c(5,4),sextype="All",Bp.find="T",rngSplit=c(80,90),steppin=0.1,lowbreaks=c(50,90,50))
+Hake.Bps.A<-Oto.Age.Model.fits(Hake.dat.otos,oto.age.col=c(5,4),sextype="All",Bp.find="T",rngSplit=c(80,90),steppin=0.1,lowbreaks=c(50,90,50),jitter=100)
 Hake.Bps.F<-Oto.Age.Model.fits(Hake.dat.otos,oto.age.col=c(5,4),sextype="All",Bp.find="T",rngSplit=c(91,91),steppin=1,lowbreaks=c(50,90,50))
 Hake.Bps.M<-Oto.Age.Model.fits(Hake.dat.otos,oto.age.col=c(5,4),sextype="All",Bp.find="T",rngSplit=c(130,140),steppin=0.1,lowbreaks=c(50,90,50))
 Hake.Lms<-Oto.Age.Model.fits(Hake.dat.otos,oto.age.col=c(5,4),sextype="All",Bp.find="F",rngSplit=c(0,100),steppin=10,breakpts=c(Hake.Bps.A$Bps$All$par[1],Hake.Bps.F$Bps$Females$par[1],Hake.Bps.M$Bps$Males$par[1]),lowbreaks=c(50,90,50))
