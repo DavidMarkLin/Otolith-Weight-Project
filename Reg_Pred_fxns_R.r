@@ -78,14 +78,14 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
         }
         inputy<-inputm1<-inputm2<-c()
         for(i in 1:jitter){
-          inputy[i] = out.f.jitter$i$par$yint
-          inputm1[i] = out.f.jitter$i$par$m1
-          inputm2[i] = out.f.jitter$i$par$m2
+          inputy[i] = out.f.jitter[[i]]$par[2]
+          inputm1[i] = out.f.jitter[[i]]$par[3]
+          inputm2[i] = out.f.jitter[[i]]$par[4]
         }
         x = c(1:100)
-        plot(x,inputy)
-        plot(x,inputm1)
-        plot(x,inputm2)
+        plot(x,inputy, xlab = "jitter number", ylab = "intercept")
+        plot(x,inputm1, xlab = "jitter number", ylab = "first slope")
+        plot(x,inputm2, xlab = "jitter number", ylab = "second slope")
       }  
       Spp.bps[[i]]<-out.f
       Low.breaks[[i]]<-lowbreaks[i]
