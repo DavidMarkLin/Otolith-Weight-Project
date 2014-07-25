@@ -76,16 +76,19 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
         for(x in 1:jitter){
         out.f.jitter[[x]]<- optim(c(sum(rngSplit)/2,yint[x],m1[x],m2[x]),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit)
         }
-        inputy<-inputm1<-inputm2<-c()
+        outputy<-outputm1<-outputm2<-outputval<-c()
         for(i in 1:jitter){
-          inputy[i] = out.f.jitter[[i]]$par[2]
-          inputm1[i] = out.f.jitter[[i]]$par[3]
-          inputm2[i] = out.f.jitter[[i]]$par[4]
+          outputy[i] = out.f.jitter[[i]]$par[2]
+          outputm1[i] = out.f.jitter[[i]]$par[3]
+          outputm2[i] = out.f.jitter[[i]]$par[4]
+          outputval[i] = out.f.jitter[[i]]$value
         }
         x = c(1:100)
-        plot(x,inputy, xlab = "jitter number", ylab = "intercept")
-        plot(x,inputm1, xlab = "jitter number", ylab = "first slope")
-        plot(x,inputm2, xlab = "jitter number", ylab = "second slope")
+        par(mfrow=c(2,2))
+        plot(x,outputy, xlab = "jitter number", ylab = "intercept")
+        plot(x,outputm1, xlab = "jitter number", ylab = "first slope")
+        plot(x,outputm2, xlab = "jitter number", ylab = "second slope")
+        plot(x,outputval, xlab = "jitter number", ylab = "function value")
       }  
       Spp.bps[[i]]<-out.f
       Low.breaks[[i]]<-lowbreaks[i]
