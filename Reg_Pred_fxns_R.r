@@ -83,12 +83,17 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
           outputm2[i] = out.f.jitter[[i]]$par[4]
           outputval[i] = out.f.jitter[[i]]$value
         }
+        output.total=cbind(outputy,outputm1,outputm2,outputval)
+        names(output.total)=c("Intercept","First Slope","Second Slope","Function Value" )
         x = c(1:100)
-        par(mfrow=c(2,2))
+        par(mfrow=c(3,3))
         plot(x,outputy, xlab = "jitter number", ylab = "intercept")
         plot(x,outputm1, xlab = "jitter number", ylab = "first slope")
         plot(x,outputm2, xlab = "jitter number", ylab = "second slope")
         plot(x,outputval, xlab = "jitter number", ylab = "function value")
+        abline(h=out.f$value, col = "red")
+        plot(out.f$value, xlab = "original guess", ylab = "function value")
+
       }  
       Spp.bps[[i]]<-out.f
       Low.breaks[[i]]<-lowbreaks[i]
@@ -104,8 +109,8 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
     }
     #Create list of modified data, breakpoints, and minimization results. Standardize names.
     names(Prof.out)<-dat.names
-    Dat.Bps.out<-list(Spp.dat.AFM,Spp.bps,Low.breaks,Prof.out)
-    names(Dat.Bps.out)<-c("Data","Bps","AgeBreaks","Profile")
+    Dat.Bps.out<-list(Spp.dat.AFM,Spp.bps,Low.breaks,Prof.out,output.total)
+    names(Dat.Bps.out)<-c("Data","Bps","AgeBreaks","Profile","Jitter Info")
     return(Dat.Bps.out)
    }
 
