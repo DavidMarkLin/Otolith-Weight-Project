@@ -92,8 +92,10 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
         plot(x,outputm2, xlab = "jitter number", ylab = "second slope")
         plot(x,outputval, xlab = "jitter number", ylab = "function value")
         abline(h=out.f$value, col = "red")
-        plot(out.f$value, xlab = "original guess", ylab = "function value")
-
+        points(out.f$value, col = "blue")
+        y.min.val <- min(outputval)
+        abline(h=y.min.val, col = "green")
+        legend("topright", legend = c(out.f$value,y.min.val) , lty=1, col=c("red","green"), bty='n', cex=.75)
       }  
       Spp.bps[[i]]<-out.f
       Low.breaks[[i]]<-lowbreaks[i]
