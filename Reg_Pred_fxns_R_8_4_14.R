@@ -67,55 +67,69 @@ Oto.Age.Model.fits<-function(spp.dat.in,oto.age.col=c(5,4),sextype="All",Bp.find
         out.f<- optim(c(sum(rngSplit)/2,0,0.1,0.1),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit,df,method="CG")
       }
       out.f.jitter<-NA
+      #Start jitter
       if(jitter>0)
       {
         out.f.jitter=list()
         yint<-runif(jitter,0,5)
         m1<-rnorm(jitter,0.1,0.03)
         m2<-rnorm(jitter,0.1,0.03)
-        for(x in 1:jitter){
-        out.f.jitter[[x]]<- optim(c(sum(rngSplit)/2,yint[x],m1[x],m2[x]),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit)
+        output.total= matrix(NA,nrow=jitter,ncol=5)
+        for(x in 1:jitter)
+        {
+          out.f.jitter[[x]]<- optim(c(sum(rngSplit)/2,yint[x],m1[x],m2[x]),PReg.obj,x.in=Spp.dat.AFM.mod[,1],y.in=Spp.dat.AFM.mod[,2],verbose=F,rngSplit=rngSplit)
+          output.total[x,1] = out.f.jitter[[x]]$par[1]
+          output.total[x,2] = out.f.jitter[[x]]$par[2]
+          output.total[x,3] = out.f.jitter[[x]]$par[3]
+          output.total[x,4] = out.f.jitter[[x]]$par[4]
+          output.total[x,5] = out.f.jitter[[x]]$value
         }
-        outputy<-outputm1<-outputm2<-outputval<-c()
-        for(i in 1:jitter){
-          outputy[i] = out.f.jitter[[i]]$par[2]
-          outputm1[i] = out.f.jitter[[i]]$par[3]
-          outputm2[i] = out.f.jitter[[i]]$par[4]
-          outputval[i] = out.f.jitter[[i]]$value
-        }
-        output.total=cbind(outputy,outputm1,outputm2,outputval)
-        names(output.total)=c("Intercept","First Slope","Second Slope","Function Value" )
-        x = c(1:100)
-        par(mfrow=c(3,3))
-        plot(x,outputy, xlab = "jitter number", ylab = "intercept")
-        plot(x,outputm1, xlab = "jitter number", ylab = "first slope")
-        plot(x,outputm2, xlab = "jitter number", ylab = "second slope")
-        if (abs(min(outputval)-out.f$value)<10){
-          plot(x,outputval, ylim = c(out.f$value-10,out.f$value+10),xlab = "jitter number", ylab = "function value")
+        names(output.total)=c("Break_pt","Intercept","First Slope","Second Slope","Function Value" )
+        x = c(1:jitter)
+        par(mfrow=c(3,2))
+        plot(x,output.total[,2], xlab = "jitter number", ylab = "intercept")
+        plot(x,output.total[,3], xlab = "jitter number", ylab = "first slope")
+        plot(x,output.total[,4], xlab = "jitter number", ylab = "second slope")
+        if (abs(min(output.total[,5])-out.f$value)<2){
+          plot(x,output.total[,5], ylim = c(out.f$value-2,out.f$value+2),xlab = "jitter number", ylab = "function value")
         } else {
-          plot(x,outputval,xlab = "jitter number", ylab = "function value")
+          plot(x,output.total[,5],xlab = "jitter number", ylab = "function value",ylim=c(min(output.total[,5]),max(output.total[,5])))
         }
         abline(h=out.f$value, col = "red")
         points(out.f$value, col = "blue")
-        y.min.val <- min(outputval)
+        y.min.val <- min(output.total[x,4])
         abline(h=y.min.val, col = "green")
-        legend("topright", legend = c(out.f$value,y.min.val) , lty=1, col=c("red","green"), bty='n', cex=.75)
-        if (one.to.one = "T"){
-          model.nums <- list(out.f,out.f.jitter[1])
+        #legend("topright", legend = c("base case","jitter minimum") , lty=1, col=c("red","green"), bty='n', cex=.75)
+        #Do one to one comparison
+        min.val.index =(output.total[,4]-out.f$value)==min(output.total[,4]-out.f$value)  #Gets index of minimum obj fun from jitter
+        min.parm.vals=output.total[min.val.index,]                                        #Get parameter values from min jitter run
+        
+        if (one.to.one == "T")
+        {
+        #model.nums <- list(out.f,out.f.jitter[1])
           model.out <-c()
-          otowt.minus.NA <- Spp.dat.AFM.mod[,1][!is.na(Spp.dat.AFM.mod[,1])]
-          age.minus.NA <- Spp.dat.AFM.mod[,2][!is.na(Spp.dat.AFM.mod[,2])]
-          for (i in 1:length(model.nums)){
-            for(j in 1: length(otowt.minus.NA)){
-              model.out[j] <- 
-              
-            }
-          }
+          otowt.minus.NA <- as.matrix(Spp.dat.AFM.mod[,1])
+          age.minus.NA <- as.matrix(Spp.dat.AFM.mod[,2])
+        #  plot.new()
+        #  lines(1,1,type = "l")
+          
+          
+          Bp1.index<-otowt.minus.NA <= min.parm.vals[1]
+          ages.bp.1<- min.parm.vals[2]+min.parm.vals[3]*(otowt.minus.NA[Bp1.index]-min.parm.vals[1])
+          Bp2.index<-otowt.minus.NA > min.parm.vals[1]
+          ages.bp.2<- min.parm.vals[2]+min.parm.vals[4]*(otowt.minus.NA[Bp2.index]-min.parm.vals[1])          
+          ages.pred.min.val<-c(ages.bp.1,ages.bp.2)
+        
+          Bp1.orig.index<-otowt.minus.NA<=out.f$par[1]
+          Bp2.orig.index<-otowt.minus.NA>out.f$par[1]
+          orig.ages.bp.1<-out.f$par[2]+out.f$par[3]*(otowt.minus.NA[Bp1.orig.index]-out.f$par[1])
+          orig.ages.bp.2<-out.f$par[2]+out.f$par[4]*(otowt.minus.NA[Bp2.orig.index]-out.f$par[1])
+          orig.pred.val<-c(orig.ages.bp.1,orig.ages.bp.2)
+          plot(orig.pred.val,ages.pred.min.val,xlim = c(0,max(orig.pred.val)+2),ylim = c(min(ages.pred.min.val)-2,max(ages.pred.min.val)+2),xlab = "benchmark age values",ylab = "Alternative Parameter Age values")
+          abline(a=0,b=1,col="red")
         }
-      
-      
-      
-      }  
+      }
+      #End jitter  
       Spp.bps[[i]]<-out.f
       Low.breaks[[i]]<-lowbreaks[i]
       names(Spp.bps)[[i]]<-names(Low.breaks)[[i]]<-dat.names[i]
